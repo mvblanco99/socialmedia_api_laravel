@@ -148,7 +148,7 @@ use ResponseTraits;
     try {
 
       //Comprobamos si el post que se quiere editar pertenece al usuario logueado
-      if(Auth::user()->id == $post->user_id) return response()->json([
+      if(Auth::user()->id != $post->user_id) return response()->json([
         'status' => false,
         'message' => 'Not authorized'
       ],403);
@@ -182,7 +182,7 @@ use ResponseTraits;
     try {
 
       //Comprobamos si el post que se quiere editar pertenece al usuario logueado
-      if(Auth::user()->id == $post->user_id) return response()->json([
+      if(Auth::user()->id != $post->user_id) return response()->json([
         'status' => false,
         'message' => 'Not authorized'
       ],403);

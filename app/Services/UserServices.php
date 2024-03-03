@@ -62,7 +62,7 @@ class UserServices
     try {
 
       //Comprobamos si el usuario que se quiere editar es el usuario logueado
-      if(Auth::user()->id == $user->user_id) return response()->json([
+      if(Auth::user()->id != $user->user_id) return response()->json([
         'status' => false,
         'message' => 'Not authorized'
       ],403);
@@ -105,7 +105,7 @@ class UserServices
   {
     try {
       //Comprobamos si el usuario que se quiere eliminar es el usuario logueado
-      if(Auth::user()->id == $user->user_id) return response()->json([
+      if(Auth::user()->id != $user->user_id) return response()->json([
         'status' => false,
         'message' => 'Not authorized'
       ],403);
