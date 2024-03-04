@@ -149,7 +149,7 @@ class UserServices
     return $user;
   }
 
-  public function allFriend(User $user, int $countPaginate = 20, int $inRandomOrder = 0):mixed
+  public function allFriend(User $user, int $countPaginate = 20, bool $inRandomOrder = false):mixed
   {
     try {
       //Realizamos la consulta
@@ -158,7 +158,7 @@ class UserServices
           ->orWhere('recipient', $user->id)
           ->selectRaw('DISTINCT CASE WHEN sender = ' . $user->id . ' THEN recipient ELSE sender END AS friend_id');
 
-      if($inRandomOrder == 1) $query->inRandomOrder();
+      if($inRandomOrder) $query->inRandomOrder();
 
       $listFriends = $query->paginate($countPaginate);
           
@@ -191,7 +191,7 @@ class UserServices
       //Obtenemos el usuario logueado
       $user = User::find(Auth::user()->id);
       //Buscamos los amigos
-      $friends = $this->allFriend($user, 50);
+      $friends = $this->allFriend($user, 50, true);
       //Verificamos si hubo un error durante la busqueda
       if(!is_array($friends)) return $this->response($friends,false,500);
       //Guardamos los identificadores de los amigos en una variable
@@ -205,7 +205,7 @@ class UserServices
         ->get();
 
       $recommendedUsers = [];
-
+      //Clasificamos los usuarios para encontrar recomendados
       foreach($possibleRecommendations as $recommendations){
         if(!in_array($recommendations->id,$id_friends)) array_push($recommendedUsers,$recommendations);
         if(count($recommendedUsers) > 4) break;
