@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\Friend;
 use App\Models\Image;
+use App\Observers\FriendObserver;
 use App\Observers\ImageObserver;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
@@ -27,7 +29,7 @@ class EventServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Image::observe(ImageObserver::class);
+        Friend::observe(FriendObserver::class);
     }
 
     /**

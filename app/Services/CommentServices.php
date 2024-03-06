@@ -7,6 +7,7 @@ use App\Models\Comment;
 use App\Models\Post;
 use Illuminate\Support\Facades\Auth;
 use App\Traits\ResponseTraits;
+use Error;
 
 class CommentServices
 {
@@ -39,26 +40,22 @@ class CommentServices
         'user_id' =>  Auth::user()->id
       ]);
 
+      if(!$newComment) throw new Error('Error creating comment');
+
       //Retornamos respuesta al cliente
-      $response = $this->response(
+      return $this->response(
         'Comment created successfully', 
         true,
         201,
         $newComment, 
       );
 
-      return $response;
-
     } catch (\Exception $e) {
       
       //Retornamos error al cliente
-      $response = $this->response(
-        'Error creating comment.' . " " . $e->getMessage(), 
-        false,
-        500,
+      return $this->serviceUnavailableResponse(
+        $e->getMessage(), 
       );
-
-      return $response;
     }
   }
   
@@ -67,35 +64,29 @@ class CommentServices
     try{
 
       //Comprobamos si el comentario que se quiere editar pertenece al usuario logueado
-      if(Auth::user()->id != $comment->user_id) return response()->json([
-        'status' => false,
-        'message' => 'Not authorized'
-      ],403);
+      if(Auth::user()->id != $comment->user_id) return $this->unauthorizedResponse();
         
       $comment->paragraph = $request->paragraph;
       $comment->is_edit = Comment::EDITED;
-      $comment->save();
+      $commentUpdated = $comment->save();
+
+      if(!$commentUpdated) throw new Error('Error updating comment');
 
       //Retornamos respuesta al cliente
-      $response = $this->response(
+      return $this->response(
         'Comment updated successfully', 
         true,
         201,
         $comment
       );
 
-      return $response;
-
     }catch(\Exception $e){
 
       //Retornamos error al cliente
-      $response = $this->response(
-        'Error updating comment.' . " " . $e->getMessage(), 
-        false,
-        500,
+      //Retornamos error al cliente
+      return $this->serviceUnavailableResponse(
+        $e->getMessage(), 
       );
-
-      return $response;
 
     }
   }
@@ -104,32 +95,24 @@ class CommentServices
   {   
     try{
       //Comprobamos si el comentario que se quiere editar pertenece al usuario logueado
-      if(Auth::user()->id != $comment->user_id) return response()->json([
-        'status' => false,
-        'message' => 'Not authorized'
-      ],403);
+      if(Auth::user()->id != $comment->user_id) return $this->unauthorizedResponse();
 
-      $comment->delete();
+      $commentDeleted = $comment->delete();
+      if(!$commentDeleted) throw new Error('Error deleting comment');
 
       //Retornamos respuesta al cliente
-      $response = $this->response(
+      return $this->response(
         'Comment deleted successfully', 
         true,
         200, 
       );
 
-      return $response;
-
     }catch(\Exception $e){
       
       //Retornamos error al cliente
-      $response = $this->response(
-        'Error deleting comment.' . " " . $e->getMessage(), 
-        false,
-        500,
+      return $this->serviceUnavailableResponse(
+        $e->getMessage(), 
       );
-
-      return $response;
 
     }
   }

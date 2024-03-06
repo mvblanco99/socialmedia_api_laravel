@@ -66,10 +66,7 @@ class ReactionServices
     try{
 
       //Comprobamos si la reaccion que se quiere eliminar pertenece al usuario logueado
-      if(Auth::user()->id != $reaction->user_id) return response()->json([
-        'status' => false,
-        'message' => 'Not authorized'
-      ],403);
+      if(Auth::user()->id != $reaction->user_id) return $this->unauthorizedResponse();
 
       $reaction->delete();
 

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Traits\ResponseTraits;
+use Error;
 use Illuminate\Support\Facades\Notification;
 use Psy\VersionUpdater\SelfUpdate;
 
@@ -17,10 +18,6 @@ class PostServices
 {
 
 use ResponseTraits;
-
-  private const NONE = 0;
-  private const ADDIMAGEPROFILE = 1;
-  private const ADDIMAGECOVER = 2;
 
   public function __construct(
     private ImageServices $imageServices,
@@ -58,19 +55,6 @@ use ResponseTraits;
     return $post;
   }
   
-  public function assignedUserImage(int $optionsImage, string $url_image)
-  {
-    $urlImageUser = null;
-
-    if($optionsImage == self::ADDIMAGEPROFILE){
-      $urlImageUser = $this->userServices->updateImageProfile($url_image);
-     }else if($optionsImage == self::ADDIMAGECOVER){
-      $urlImageUser = $this->userServices->updateImageCover($url_image);
-    }
-
-    return $urlImageUser;
-  }
-
   public function controlProcessPost(PostRequest $request, int $optionsImage = 0)
   {
     // Empezar una transacción
@@ -99,18 +83,15 @@ use ResponseTraits;
             throw new \Exception('Error creating image');
           }
 
-          //Comprobamos si el usuario quiere asignar la imagen como perfil o portada
-          if($optionsImage != $this::NONE){
-            
-            $urlImageUser = $this->assignedUserImage($optionsImage, $image->url);
-            
-            if(!$urlImageUser){
+          if($optionsImage != 0){
+
+            $urlImageUser = $this->userServices->assignedUserImage($optionsImage, $image->url);
+
+            if(is_string($urlImageUser)){
               // Si no se pudo crear la imagen, lanzar una excepción
-              throw new \Exception('Error asignando image user');
+              throw new \Exception($urlImageUser);
             }
           }
-
-          
         }
 
         //Generamos la notificacion del post
@@ -136,10 +117,7 @@ use ResponseTraits;
           Storage::delete('public/images/' . "" .$post->user->name . "" . $post->user_id . "/". $filename);
         }
 
-        return response()->json([
-          'status' => false,
-          'message' => $errorMessage,
-        ],500);
+        return $this->serviceUnavailableResponse($errorMessage);
     }
   }
 
@@ -148,14 +126,13 @@ use ResponseTraits;
     try {
 
       //Comprobamos si el post que se quiere editar pertenece al usuario logueado
-      if(Auth::user()->id != $post->user_id) return response()->json([
-        'status' => false,
-        'message' => 'Not authorized'
-      ],403);
+      if(Auth::user()->id != $post->user_id) return $this->unauthorizedResponse();
 
       $post->paragraph = $request->paragraph;
       $post->is_edit = Post::EDITED;
-      $post->save();
+      $postUpdated = $post->save();
+
+      if(!$postUpdated) throw new Error('Error updating Post');
 
       //Retornamos respuesta al cliente
       return $this->response(
@@ -167,13 +144,7 @@ use ResponseTraits;
     } catch (\Exception $e) {
       
       //Retornamos error al cliente
-      $response = $this->response(
-        'Error updating Post.' . " " . $e->getMessage(), 
-        false,
-        500,
-      );
-
-      return $response;
+      return $this->serviceUnavailableResponse($e->getMessage());
     }
   }
 
@@ -182,12 +153,10 @@ use ResponseTraits;
     try {
 
       //Comprobamos si el post que se quiere editar pertenece al usuario logueado
-      if(Auth::user()->id != $post->user_id) return response()->json([
-        'status' => false,
-        'message' => 'Not authorized'
-      ],403);
+      if(Auth::user()->id != $post->user_id) return $this->unauthorizedResponse();
 
-      $post->delete();
+      $postDeleted = $post->delete();
+      if(!$postDeleted) throw new Error('Error deleting Post');
 
       //Retornamos respuesta al cliente
       return $this->response(
@@ -199,13 +168,7 @@ use ResponseTraits;
     } catch (\Exception $e) {
       
       //Retornamos error al cliente
-      $response = $this->response(
-        'Error deleting Post.' . " " . $e->getMessage(), 
-        false,
-        500,
-      );
-
-      return $response;
+      return $this->serviceUnavailableResponse($e->getMessage());
     }
   }
 }
