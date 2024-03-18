@@ -36,4 +36,9 @@ class FriendController extends Controller
     {
         return $this->UserRelationshipService->acceptRequestFriend($friendRequest);
     }
+
+    public function destroyFriendshipRelationship(User $user)
+    {
+        return $this->UserRelationshipService->destroyFriendshipRelationship($user);
+    }
 }

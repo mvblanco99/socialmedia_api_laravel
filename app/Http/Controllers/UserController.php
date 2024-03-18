@@ -6,7 +6,6 @@ use App\Http\Requests\PostRequest;
 use App\Http\Requests\UserRequest;
 use App\Models\User;
 use App\Services\PostServices;
-use App\Services\UserRelationshipService;
 use App\Services\UserServices;
 
 class UserController extends Controller

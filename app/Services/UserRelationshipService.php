@@ -10,7 +10,7 @@ use App\Notifications\AcceptFrienRequestNotification;
 use App\Notifications\FriendRequestNotification;
 use App\Traits\CacheTraits;
 use App\Traits\ResponseTraits;
-use Error;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -217,7 +217,7 @@ class UserRelationshipService{
           'status' => FriendRequest::PENDING
         ]);
 
-        if(!$request) throw new Error('Error al enviar solicitud');
+        if(!$request) throw new Exception('Error al enviar solicitud');
 
         //Enviar notificacion al usuario destinatario
         $recipient->notify(new FriendRequestNotification($request));
@@ -228,6 +228,9 @@ class UserRelationshipService{
         return $this->serviceUnavailableResponse($e->getMessage());
       }
   }
+
+  public function destroyFriendRequest(){} 
+
 
   public function acceptRequestFriend(FriendRequest $friendRequest):JsonResponse
   {
@@ -249,24 +252,24 @@ class UserRelationshipService{
         }
 
         //Guardar el registro de la amistad
-        $friends = Friend::create([
+        $friendship = Friend::create([
           'sender' => $friendRequest->sender,
           'recipient' => $friendRequest->recipient
         ]);
 
-        if(!$friends){
+        if(!$friendship){
           // Si no se pudo crear el post, lanzar una excepción
           throw new \Exception('Error creating friend record');
         }
 
         //Enviar notificacion de aceptacion de solicitud de amistad al usuario que envio la solicitud
         $sender = User::find($friendRequest->sender);
-        $sender->notify(new AcceptFrienRequestNotification($friends)); 
+        $sender->notify(new AcceptFrienRequestNotification($friendship)); 
 
           // Commit de la transacción si todo ha ido bien
         DB::commit();
 
-        return $this->response('solicitud aceptada',true,201,$friends);
+        return $this->response('solicitud aceptada',true,201,$friendship);
 
 
       } catch (\Exception $e) {
@@ -276,12 +279,29 @@ class UserRelationshipService{
       }
   }
 
-  public function destroyFriend(User $user)
+  public function destroyFriendshipRelationship(User $userSelected):JsonResponse
   {
     try {
-      //code...
-    } catch (\Throwable $th) {
-      //throw $th;
+      
+      $id_user = Auth::user()->id;
+
+        $friendship = 
+          Friend::where(function($query) use ($userSelected, $id_user) {
+          $query->where('sender', $id_user)->where('recipient', $userSelected->id);
+          })->orWhere(function($query) use ($userSelected, $id_user) {
+              $query->where('sender', $userSelected->id)->where('recipient', $id_user);
+          })->get();
+
+        if(!$friendship) throw new Exception('nonexistent friendship');
+
+        $friendshipDeleted = $friendship->delete();
+
+        if(!$friendshipDeleted) throw new Exception('Error deleting friendship');
+
+        return $this->response('Friendship deleted successfully',true,200);
+
+    } catch (\Exception $e) {
+      return $this->serviceUnavailableResponse($e->getMessage());
     }
   }
 

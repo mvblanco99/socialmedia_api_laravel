@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\PostRequest;
 use App\Models\Post;
 use App\Models\User;
-use App\Notifications\PostNotification;
 use App\Services\PostServices;
 
 class PostController extends Controller

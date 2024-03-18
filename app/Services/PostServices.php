@@ -10,14 +10,14 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Traits\ResponseTraits;
-use Error;
-use Illuminate\Support\Facades\Notification;
-use Psy\VersionUpdater\SelfUpdate;
+use Exception;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class PostServices
 {
 
 use ResponseTraits;
+use AuthorizesRequests;
 
   public function __construct(
     private ImageServices $imageServices,
@@ -125,14 +125,13 @@ use ResponseTraits;
   {
     try {
 
-      //Comprobamos si el post que se quiere editar pertenece al usuario logueado
-      if(Auth::user()->id != $post->user_id) return $this->unauthorizedResponse();
-
-      $post->paragraph = $request->paragraph;
+      $this->authorize('update',$post);
+      
+      $post->description = $request->description;
       $post->is_edit = Post::EDITED;
       $postUpdated = $post->save();
 
-      if(!$postUpdated) throw new Error('Error updating Post');
+      if(!$postUpdated) throw new Exception('Error updating Post');
 
       //Retornamos respuesta al cliente
       return $this->response(
@@ -152,11 +151,10 @@ use ResponseTraits;
   {
     try {
 
-      //Comprobamos si el post que se quiere editar pertenece al usuario logueado
-      if(Auth::user()->id != $post->user_id) return $this->unauthorizedResponse();
+      $this->authorize('delete',$post);
 
       $postDeleted = $post->delete();
-      if(!$postDeleted) throw new Error('Error deleting Post');
+      if(!$postDeleted) throw new Exception('Error deleting Post');
 
       //Retornamos respuesta al cliente
       return $this->response(

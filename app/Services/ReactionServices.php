@@ -7,12 +7,15 @@ use App\Models\Post;
 use App\Models\Reaction;
 use App\Models\User;
 use App\Traits\ResponseTraits;
+use Exception;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ReactionServices
 {
 
   use ResponseTraits;
+  use AuthorizesRequests;
 
   public function selectModeltoReaction(int $modelSelected)
   {
@@ -66,30 +69,21 @@ class ReactionServices
     try{
 
       //Comprobamos si la reaccion que se quiere eliminar pertenece al usuario logueado
-      if(Auth::user()->id != $reaction->user_id) return $this->unauthorizedResponse();
+      $this->authorize('delete', $reaction);
 
-      $reaction->delete();
+      $reactionDeleted = $reaction->delete();
+      if(!$reactionDeleted) throw new Exception('Error deleting reaction');
 
       //Retornamos respuesta al cliente
-      $response = $this->response(
+      return $this->response(
         'Reaction deleted successfully', 
         true,
         200, 
       );
 
-      return $response;
-
     }catch(\Exception $e){
-      
       //Retornamos error al cliente
-      $response = $this->response(
-        'Error deleting reaction.' . " " . $e->getMessage(), 
-        false,
-        500,
-      );
-
-      return $response;
-
+      return $this->serviceUnavailableResponse($e->getMessage());
     }
   }
 
