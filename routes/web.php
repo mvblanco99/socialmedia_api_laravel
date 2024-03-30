@@ -1,7 +1,10 @@
 <?php
 
+use App\Models\User;
+use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
+use Laravel\Fortify\Contracts\VerifyEmailResponse;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,3 +23,24 @@ Route::get('/login', function () {
         'message' => 'unauthorized'
     ],401)->name('login');
 });
+
+// Retrieve the verification limiter configuration for verification attempts
+$verificationLimiter = config('fortify.limiters.verification', '6,1');
+
+Route::get('/auth/email/verify/{id}/{hash}', function($id,$hash){
+
+    $user = User::find($id);
+
+    abort_if(!$user,403);
+
+    abort_if(!hash_equals($hash, sha1($user->getEmailForVerification())),403);
+
+    if(!$user->hasVerifiedEmail()){
+        $user->markEmailAsVerified();
+
+        event(new Verified($user));
+    }
+
+    return app(VerifyEmailResponse::class);
+
+})->middleware(['throttle:'.$verificationLimiter])->name('verification.verify');

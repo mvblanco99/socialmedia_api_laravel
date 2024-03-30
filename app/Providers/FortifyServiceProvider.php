@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Laravel\Fortify\Fortify;
-use Laravel\Fortify\Contracts\{LoginResponse, RegisterResponse};
+use Laravel\Fortify\Contracts\{EmailVerificationNotificationSentResponse, LoginResponse, RegisterResponse, VerifyEmailResponse};
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -40,13 +40,35 @@ class FortifyServiceProvider extends ServiceProvider
         $this->app->instance(RegisterResponse::class, new class implements RegisterResponse {
             public function toResponse($request)
             {
-                $user = User::where('email', $request->email)->first();
                 return $request->wantsJson()
                     ? response()->json([
                         'message' => 'Registration successful, verify your email address',
-                        "token" => $user->createToken($request->email)->plainTextToken,
                         ], 200)
                     : redirect()->intended(Fortify::redirects('register'));
+            }
+        });
+
+        $this->app->instance(VerifyEmailResponse::class, new class implements VerifyEmailResponse {
+            public function toResponse($request)
+            {
+                return $request->wantsJson()
+                    ? response()->json([
+                        'message' => 'Su correo ha sido verificado',
+                        ], 200)
+                    : redirect()->intended(Fortify::redirects('home'));
+            }
+        });
+
+        $this->app->instance(EmailVerificationNotificationSentResponse::class, new class implements EmailVerificationNotificationSentResponse{
+
+            public function toResponse($request)
+            {
+                return $request->wantsJson()
+                    ? response()->json([
+                        'message' => 'Su ha reenviado correo de confirmación',
+                        ], 200)
+                    : redirect()->intended(Fortify::redirects('home'));
+
             }
         });
     }

@@ -32,6 +32,5 @@ class UserSeeder extends Seeder
                 'recipient' => $user->id
             ]);
         }
-    
     }
 }
