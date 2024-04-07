@@ -3,7 +3,6 @@
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\View;
 use Laravel\Fortify\Contracts\VerifyEmailResponse;
 
 /*
@@ -18,10 +17,7 @@ use Laravel\Fortify\Contracts\VerifyEmailResponse;
 */
 
 Route::get('/login', function () {
-    return response()->json([
-        'status' => false,
-        'message' => 'unauthorized'
-    ],401)->name('login');
+    return 1;
 });
 
 // Retrieve the verification limiter configuration for verification attempts

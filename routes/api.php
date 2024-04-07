@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\FriendController;
 use App\Http\Controllers\PostController;
@@ -28,6 +29,8 @@ Route::prefix('auth')->group(function () {
     Route::post('/register', [RegisteredUserController::class, 'store'])
         ->middleware('guest:'.config('fortify.guard'));  // Only guests (non-authenticated users) are allowed
 
+    
+
     Route::group(['middleware' => 'auth:sanctum'], function() {
         // Retrieve the verification limiter configuration for verification attempts
         $verificationLimiter = config('fortify.limiters.verification', '6,1');
@@ -36,7 +39,11 @@ Route::prefix('auth')->group(function () {
         Route::post(RoutePath::for('verification.send', 'auth/email/verification-notification'), [EmailVerificationNotificationController::class, 'store'])
             ->middleware([config('fortify.auth_middleware', 'auth').':'.config('fortify.guard'), 'throttle:'.$verificationLimiter])
             ->name('verification.send');
+        
+        Route::post('/logout', [AuthController::class, 'logout'])
+            ->name('logout');
     });
+
 });
 
 Route::group(['middleware' => 'auth:sanctum'], function() {

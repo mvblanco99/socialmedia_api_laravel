@@ -9,11 +9,12 @@ use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Laravel\Fortify\Fortify;
-use Laravel\Fortify\Contracts\{EmailVerificationNotificationSentResponse, LoginResponse, RegisterResponse, VerifyEmailResponse};
+use Laravel\Fortify\Contracts\{EmailVerificationNotificationSentResponse, LoginResponse, LogoutResponse, RegisterResponse, VerifyEmailResponse};
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -28,6 +29,7 @@ class FortifyServiceProvider extends ServiceProvider
             {
                 if($request->wantsJson()) {
                     $user = User::where('email', $request->email)->first();
+
                     return response()->json([
                         "message" => "You are successfully logged in",
                         "token" => $user->createToken($request->email)->plainTextToken,
@@ -71,6 +73,15 @@ class FortifyServiceProvider extends ServiceProvider
 
             }
         });
+
+        $this->app->instance(LogoutResponse::class, new class implements LogoutResponse{
+
+            public function toResponse($request)
+            {
+                return response()->noContent(204);
+            }
+        });
+
     }
 
     /**
