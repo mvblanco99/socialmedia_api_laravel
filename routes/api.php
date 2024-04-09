@@ -47,7 +47,7 @@ Route::group(['middleware' => 'auth:sanctum'], function() {
     Route::post('/user/updateImageUser/{optionImage}',[UserController::class, 'updateImageUser']);
     Route::put('/user/{user}/update',[UserController::class, 'updateField']);
 
-    //RUTAS PARA LA GESTION DE POSTS
+    //RUTAS PARA LA GESTION DE POS  TS  
     Route::get('/posts/{user}',[PostController::class, 'index']);
     Route::post('/posts/store',[PostController::class, 'store']);
     Route::put('/posts/{post}/update/',[PostController::class, 'update']);

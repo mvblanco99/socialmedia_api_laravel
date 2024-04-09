@@ -55,7 +55,7 @@ class FortifyServiceProvider extends ServiceProvider
                     ? response()->json([
                         'message' => 'Su correo ha sido verificado',
                         ], 200)
-                    : redirect()->intended(Fortify::redirects('home'));
+                    : redirect()->intended(Fortify::redirects('register'));
             }
         });
 

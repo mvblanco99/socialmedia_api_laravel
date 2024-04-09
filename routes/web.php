@@ -18,10 +18,7 @@ use Laravel\Fortify\Contracts\VerifyEmailResponse;
 */
 
 Route::get('/login', function () {
-    return response()->json([
-        'status' => false,
-        'message' => 'unauthorized'
-    ],401)->name('login');
+    return 1;
 });
 
 // Retrieve the verification limiter configuration for verification attempts
