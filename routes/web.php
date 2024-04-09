@@ -3,7 +3,6 @@
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\View;
 use Laravel\Fortify\Contracts\VerifyEmailResponse;
 
 /*
