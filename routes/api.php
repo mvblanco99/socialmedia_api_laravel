@@ -36,9 +36,9 @@ Route::prefix('auth')->group(function () {
         $verificationLimiter = config('fortify.limiters.verification', '6,1');
         
         //REENVIAR CORREO DE VERIFICACION
-        Route::post(RoutePath::for('verification.send', 'auth/email/verification-notification'), [EmailVerificationNotificationController::class, 'store'])
-            ->middleware([config('fortify.auth_middleware', 'auth').':'.config('fortify.guard'), 'throttle:'.$verificationLimiter])
-            ->name('verification.send');
+        Route::post(RoutePath::for('verification.send', '/email/verification-notification'), [EmailVerificationNotificationController::class, 'store'])
+        ->middleware('throttle:'.$verificationLimiter)
+        ->name('verification.send');
         
         Route::post('/logout', [AuthController::class, 'logout'])
             ->name('logout');
