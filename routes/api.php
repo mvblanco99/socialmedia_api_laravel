@@ -34,8 +34,8 @@ Route::prefix('auth')->group(function () {
         $verificationLimiter = config('fortify.limiters.verification', '6,1');
         
         //REENVIAR CORREO DE VERIFICACION
-        Route::post(RoutePath::for('verification.send', '/email/verification-notification'), [EmailVerificationNotificationController::class, 'store'])
-            ->middleware('throttle:'.$verificationLimiter)
+        Route::post(RoutePath::for('verification.send', 'auth/email/verification-notification'), [EmailVerificationNotificationController::class, 'store'])
+            ->middleware([config('fortify.auth_middleware', 'auth').':'.config('fortify.guard'), 'throttle:'.$verificationLimiter])
             ->name('verification.send');
         
         Route::post('/logout', [AuthController::class, 'logout'])
@@ -52,7 +52,7 @@ Route::group(['middleware' => 'auth:sanctum'], function() {
     Route::post('/user/updateImageUser/{optionImage}',[UserController::class, 'updateImageUser']);
     Route::put('/user/{user}/update',[UserController::class, 'updateField']);
 
-    //RUTAS PARA LA GESTION DE POSTS
+    //RUTAS PARA LA GESTION DE POS  TS  
     Route::get('/posts/{user}',[PostController::class, 'index']);
     Route::post('/posts/store',[PostController::class, 'store']);
     Route::put('/posts/{post}/update/',[PostController::class, 'update']);
