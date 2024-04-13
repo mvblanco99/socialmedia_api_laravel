@@ -27,7 +27,7 @@ use AuthorizesRequests;
   public function index(User $user)
   {
     try {
-      $posts = Post::where('user_id', $user->id)->paginate(10);
+      $posts = Post::where('user_id', $user->id)->paginate(30);
       return response()->json([
           'status' => true,
           'posts' => $posts

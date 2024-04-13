@@ -42,11 +42,17 @@ class FortifyServiceProvider extends ServiceProvider
         $this->app->instance(RegisterResponse::class, new class implements RegisterResponse {
             public function toResponse($request)
             {
-                return $request->wantsJson()
-                    ? response()->json([
-                        'message' => 'Registration successful, verify your email address',
-                        ], 200)
-                    : redirect()->intended(Fortify::redirects('register'));
+
+                if($request->wantsJson()) {
+                    $user = User::where('email', $request->email)->first();
+
+                    return $request->wantsJson()
+                        ? response()->json([
+                            'message' => 'Registration successful, verify your email address',
+                            "token" => $user->createToken($request->email)->plainTextToken,
+                            ], 200)
+                        : redirect()->intended(Fortify::redirects('register'));
+                }
             }
         });
 

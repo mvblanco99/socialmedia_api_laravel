@@ -29,27 +29,25 @@ Route::prefix('auth')->group(function () {
     Route::post('/register', [RegisteredUserController::class, 'store'])
         ->middleware('guest:'.config('fortify.guard'));  // Only guests (non-authenticated users) are allowed
 
-    
-
     Route::group(['middleware' => 'auth:sanctum'], function() {
         // Retrieve the verification limiter configuration for verification attempts
         $verificationLimiter = config('fortify.limiters.verification', '6,1');
         
         //REENVIAR CORREO DE VERIFICACION
-        Route::post(RoutePath::for('verification.send', 'auth/email/verification-notification'), [EmailVerificationNotificationController::class, 'store'])
-            ->middleware([config('fortify.auth_middleware', 'auth').':'.config('fortify.guard'), 'throttle:'.$verificationLimiter])
+        Route::post(RoutePath::for('verification.send', '/email/verification-notification'), [EmailVerificationNotificationController::class, 'store'])
+            ->middleware('throttle:'.$verificationLimiter)
             ->name('verification.send');
         
         Route::post('/logout', [AuthController::class, 'logout'])
             ->name('logout');
     });
-
 });
 
 Route::group(['middleware' => 'auth:sanctum'], function() {
 
     //RUTAS PARA SOLICITAR INFORMACION DE USUARIO LOGUEADO
     Route::get('/user',[UserController::class, 'index'])->middleware('verified');
+    Route::get('find/{user}/user',[UserController::class,'findUser']);
     Route::get('/user/view/{user}/images',);
     Route::post('/user/updateImageUser/{optionImage}',[UserController::class, 'updateImageUser']);
     Route::put('/user/{user}/update',[UserController::class, 'updateField']);

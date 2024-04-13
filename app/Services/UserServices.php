@@ -24,7 +24,17 @@ class UserServices
         'status' => true,
         'user' => $user,
     ],200);
-  } 
+  }
+  
+  public function findUser($user):JsonResponse
+  {
+    $data = User::find($user);
+    if(!$data) return response()->json(['data' => 'Usuario no registrado'],200);
+
+    return response()->json([
+        'data' => $data,
+    ],200);
+  }
 
   public function create(UserRequest $request):JsonResponse
   {

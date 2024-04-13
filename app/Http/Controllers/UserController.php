@@ -22,6 +22,13 @@ class UserController extends Controller
         return $response;
     }
 
+    public  function findUser($user)
+    {
+        //extraemos los datos del usuario autenticado
+        $response = $this->userServices->findUser($user);
+        return $response;
+    }
+
     public function register(UserRequest $request)
     {
         $response = $this->userServices->create($request);
