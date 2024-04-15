@@ -24,10 +24,10 @@ use AuthorizesRequests;
     private UserServices $userServices
   ){}
 
-  public function index(User $user)
+  public function index(User $user, int $paginate)
   {
     try {
-      $posts = Post::where('user_id', $user->id)->paginate(30);
+      $posts = Post::where('user_id', $user->id)->paginate($paginate);
       return response()->json([
           'status' => true,
           'posts' => $posts

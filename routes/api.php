@@ -53,7 +53,7 @@ Route::group(['middleware' => 'auth:sanctum'], function() {
     Route::put('/user/{user}/update',[UserController::class, 'updateField']);
 
     //RUTAS PARA LA GESTION DE POS  TS  
-    Route::get('/posts/{user}',[PostController::class, 'index']);
+    Route::get('/posts/{user}/{pagination}',[PostController::class, 'index']);
     Route::post('/posts/store',[PostController::class, 'store']);
     Route::put('/posts/{post}/update/',[PostController::class, 'update']);
     Route::delete('/posts/{post}/destroy',[PostController::class, 'destroy']);

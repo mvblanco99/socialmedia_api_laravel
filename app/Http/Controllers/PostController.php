@@ -14,9 +14,9 @@ class PostController extends Controller
         private PostServices $postServices, 
     ){}
 
-    public function index(User $user)
+    public function index(User $user, int $paginate)
     {
-        $posts = $this->postServices->index($user);
+        $posts = $this->postServices->index($user, $paginate);
         return $posts;
     }
 
