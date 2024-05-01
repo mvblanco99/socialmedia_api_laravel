@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\PostRequest;
+use App\Http\Requests\UpdateImageUserRequest;
 use App\Http\Requests\UserRequest;
 use App\Models\User;
 use App\Services\PostServices;
@@ -10,28 +10,36 @@ use App\Services\UserServices;
 
 class UserController extends Controller
 {
+    private const IMAGEPROFILE = 'url_image_profile';
+    private const IMAGECOVER = 'url_image_cover';
+
     public function __construct(
         private PostServices $postServices,
         private UserServices $userServices,
     ){}
     
+    //Extraemos los datos del usuario autenticado
     public  function index()
-    {
-        //extraemos los datos del usuario autenticado
+    { 
         $response = $this->userServices->index();
         return $response;
     }
 
     public  function findUser($user)
     {
-        //extraemos los datos del usuario autenticado
         $response = $this->userServices->findUser($user);
         return $response;
     }
 
-    public function register(UserRequest $request)
+    public function updateImageProfile(UpdateImageUserRequest $request, string $user)
     {
-        $response = $this->userServices->create($request);
+        $response = $this->userServices->updateImage($request, $user, self::IMAGEPROFILE);
+        return $response;
+    }
+   
+    public function updateImageCover(UpdateImageUserRequest $request, string $user)
+    {
+        $response = $this->userServices->updateImage($request, $user, self::IMAGECOVER);
         return $response;
     }
 
@@ -41,16 +49,7 @@ class UserController extends Controller
         return $response;
     }
 
-    public function updateImageUser(PostRequest $request, $optionImage = 0)
-    {
-        //Solicitamos el servicio de los posts,
-        //debido a que para crear una imagen
-        //esta debe estar contenida en un post
-        $response = $this->postServices->controlProcessPost($request, $optionImage);
-        return $response;
-    }
-
-    public function destroy(User $user)
+    public function destroy(string $user)
     {
         $response = $this->userServices->destroy($user);
         return $response;
