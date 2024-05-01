@@ -2,67 +2,41 @@
 
 namespace App\Services;
 
+use App\Http\Requests\UpdateImageUserRequest;
 use App\Http\Requests\UserRequest;
+use App\Models\Post;
 use App\Models\User;
 use App\Traits\ResponseTraits;
-use Error;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class UserServices
 {
   use ResponseTraits;
+  use AuthorizesRequests;
 
-  private const ADDIMAGEPROFILE = 1;
-  private const ADDIMAGECOVER = 2;
+  public function __construct(
+    private ImageServices $imageServices
+  ){}
 
   public function index():JsonResponse
   {
     $user = Auth::user();
-    return response()->json([
-        'status' => true,
-        'user' => $user,
-    ],200);
+    return response()->json($user,200);
   }
   
   public function findUser($user):JsonResponse
   {
-    $data = User::find($user);
-    if(!$data) return response()->json(['data' => 'Usuario no registrado'],200);
-
-    return response()->json([
-        'data' => $data,
-    ],200);
-  }
-
-  public function create(UserRequest $request):JsonResponse
-  {
     try {
-
-      $user = User::create([
-        'name' => $request->name,
-        'lastname' => $request->lastname,
-        'email' => $request->email,
-        'password' => Hash::make($request->password)
-      ]);
-
-      if(!$user) throw new Error('Error creating user');
-  
-      //Retornamos respuesta al cliente
-      return $this->response(
-        'User created successfully', 
-        true,
-        201,
-        $user, 
-      );
-    } catch (\Exception $e) {
-      //Retornamos error al cliente
-      return $this->response(
-        $e->getMessage(), 
-        false,
-        500,
-      );
+      $data = User::find($user);
+      if(!$data) return response()->json(['message' => 'Usuario no registrado'],200);
+      return response()->json($data,200);
+    } catch (Exception $e) {
+      return response()->json(['message' => $e->getMessage()],500);
     }
   }
 
@@ -81,7 +55,7 @@ class UserServices
       //Guardamos cambios
       $userUpdated = $user->save();
 
-      if(!$userUpdated)  throw new Error('Error updating field ' . $keyField . ' of the user');
+      if(!$userUpdated)  throw new Exception('Error updating field ' . $keyField . ' of the user');
 
       //Retornamos respuesta al cliente
       return $this->response(
@@ -100,53 +74,84 @@ class UserServices
     }
   }
 
-  public function destroy(User $user):JsonResponse
+  public function updateImage(UpdateImageUserRequest $request, string $user_id, string $type_image):JsonResponse
   {
+    // Empezar una transacción
+    DB::beginTransaction();
     try {
-      //Comprobamos si el usuario que se quiere eliminar es el usuario logueado
-      if(Auth::user()->id != $user->user_id) return $this->unauthorizedResponse();
-      //Eliminamos el usuario
-      $userDeleted = $user->delete();
 
-      if(!$userDeleted) throw new Error('Error deleting user');
+      //Comprobamos que el usuario tiene permisos para realizar la accion
+      $this->authorize('update', User::find($user_id));
+      
+      //Guardar la imagen en el directorio correspondiente
+      $filename = $this->imageServices->move($request->file('image'),$user_id);
+      
+      //Crear el post en la bd
+      $post  = Post::create([
+        'description' => $request->description,
+        'is_edit' => Post::UNEDITED,
+        'user_id' => $user_id
+      ]);
+      
+      // Si no se pudo crear el post, lanzar una excepción
+      if (!$post) throw new \Exception('Error creating post');
+      
+      //Guardar la url de la imagen la bd
+      $newImage = $this->imageServices->createImage($filename,$post);
 
-      //Retornamos respuesta al cliente
-      return $this->response(
-        'User deleted successfully', 
-        true,
-        200, 
-      );
+      // Si no se pudo crear la imagen, lanzar una excepción
+      if (!$newImage) throw new \Exception('Error creating image');
+      
+      //Actualizar la url de la imagen del usuario
+      $post->user->$type_image = $newImage->url;
+      $assignedUserImage = $post->user->save();
+
+      // Si no se pudo actualizar la url de la imagen( Profile o Cover ) del usuario, lanzar una excepción
+      if (!$assignedUserImage) throw new \Exception('Error assigned image user');
+
+      // Commit de la transacción si todo ha ido bien
+      DB::commit();
+
+      //Retornamos el post
+      return response()->json(Post::with('images')->with('user')->where('id', $post->id)->get(),201);
+
+    } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+     
+      //Retornamos el mensaje de error 
+      return response()->json(['message' => $e->getMessage()], 403);
+    
     } catch (\Exception $e) {
-      //Retornamos error al cliente
-      return $this->response(
-        $e->getMessage(), 
-        false,
-        500,
-      );
+      
+      // Rollback de la transacción en caso de error
+      DB::rollBack();
+      
+      //Se borra la imagen del servidor
+      if (isset($filename)) 
+        Storage::delete('public/images/' . "" .$post->user->name . "" . $post->user_id . "/". $filename);
+
+      //Retornamos el mensaje de error 
+      return response()->json(['message' => $e->getMessage()], 500);
     }
   }
 
- public function assignedUserImage(int $optionsImage = 0, string $urlImage):mixed
+  public function destroy(string $user_id):JsonResponse
   {
     try {
+      $user = User::find($user_id);
+      //Comprobamos que el usuario tiene permisos para realizar la accion
+      $this->authorize('delete', $user);
+      
+      //Eliminamos el usuario
+      $userDeleted = $user->delete();
+      if(!$userDeleted) throw new Exception('Error deleting user');
 
-      if($optionsImage < self::ADDIMAGEPROFILE 
-      || $optionsImage > self::ADDIMAGECOVER ) throw new \Exception('Choose image invalid');
+      //Retornamos respuesta al cliente
+      return response()->json(204);
 
-      $user = User::find(Auth()->user()->id);
-
-      if($optionsImage == self::ADDIMAGEPROFILE){
-        $user->url_image_profile = $urlImage;
-      }else{
-        $user->url_image_cover = $urlImage;
-      }
-        
-      $userUpdated = $user->save();
-
-      if(!$userUpdated) throw new \Exception('Error updating image of the user');
-
-    } catch (\Exception $e) {
-      return $e->getMessage();
+    } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+      return response()->json(['message' => $e->getMessage()],403);
+    }catch (\Exception $e) {
+      return response()->json(['message' => $e->getMessage()],500);
     }
   }
 }

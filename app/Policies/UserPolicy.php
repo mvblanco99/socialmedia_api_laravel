@@ -2,11 +2,10 @@
 
 namespace App\Policies;
 
-use App\Models\FriendRequest;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
-class FriendRequestPolicy
+class UserPolicy
 {
     /**
      * Determine whether the user can view any models.
@@ -19,7 +18,7 @@ class FriendRequestPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, FriendRequest $friendRequest): bool
+    public function view(User $user, User $model): bool
     {
         //
     }
@@ -29,29 +28,29 @@ class FriendRequestPolicy
      */
     public function create(User $user): bool
     {
-        
+        //
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, FriendRequest $friendRequest): bool
+    public function update(User $user, User $model): bool
     {
-        //
+        return $user->id == $model->id;
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, FriendRequest $friendRequest): bool
+    public function delete(User $user, User $model): bool
     {
-        //
+        return $user->id == $model->id;
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, FriendRequest $friendRequest): bool
+    public function restore(User $user, User $model): bool
     {
         //
     }
@@ -59,7 +58,7 @@ class FriendRequestPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, FriendRequest $friendRequest): bool
+    public function forceDelete(User $user, User $model): bool
     {
         //
     }
