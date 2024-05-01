@@ -49,10 +49,12 @@ Route::group(['middleware' => 'auth:sanctum'], function() {
     Route::get('/user',[UserController::class, 'index'])->middleware('verified');
     Route::get('find/{user}/user',[UserController::class,'findUser']);
     Route::get('/user/view/{user}/images',);
-    Route::post('/user/updateImageUser/{optionImage}',[UserController::class, 'updateImageUser']);
     Route::put('/user/{user}/update',[UserController::class, 'updateField']);
-
-    //RUTAS PARA LA GESTION DE POS  TS  
+    Route::delete('user/{user}/destroy',[UserController::class, 'destroy']);
+    Route::post('/user/image_profile/{user}/update',[UserController::class, 'updateImageProfile']);
+    Route::post('/user/image_cover/{user}/update',[UserController::class, 'updateImageCover']);
+    
+    //RUTAS PARA LA GESTION DE POSTS  
     Route::get('/posts/{user}/{pagination}',[PostController::class, 'index']);
     Route::post('/posts/store',[PostController::class, 'store']);
     Route::put('/posts/{post}/update/',[PostController::class, 'update']);
