@@ -32,11 +32,17 @@ class CreateNewUser implements CreatesNewUsers
             'password' => $this->passwordRules(),
         ])->validate();
 
+        //Configuramos imagen de perfil y portada por defecto
+        $urlImageProfileDefault = asset('profile_image_default.jpg');
+        $urlImageCoverDefault = asset('image_cover_default.jpg');
+
         return User::create([
             'name' => $input['name'],
             'lastname' => $input['lastname'],
             'email' => $input['email'],
             'password' => Hash::make($input['password']),
+            'url_image_profile' => $urlImageProfileDefault,
+            'url_image_cover' => $urlImageCoverDefault
         ]);
     }
 }
