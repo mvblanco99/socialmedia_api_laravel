@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
+use App\Http\Requests\UpdateFieldUserRequest;
 use App\Http\Requests\UpdateImageUserRequest;
-use App\Http\Requests\UserRequest;
 use App\Models\Post;
 use App\Models\User;
 use App\Traits\ResponseTraits;
@@ -33,18 +33,19 @@ class UserServices
   {
     try {
       $data = User::find($user);
-      if(!$data) return response()->json(['message' => 'Usuario no registrado'],200);
+      if(!$data) return response()->json(['message' => 'User not found'],200);
       return response()->json($data,200);
     } catch (Exception $e) {
       return response()->json(['message' => $e->getMessage()],500);
     }
   }
 
-  public function updateField(UserRequest $request, User $user):JsonResponse
+  public function updateField(UpdateFieldUserRequest $request, string $user_id)
   {
     try {
-      //Comprobamos si el usuario que se quiere editar es el usuario logueado
-      if(Auth::user()->id != $user->user_id) return $this->unauthorizedResponse();
+      $user = User::find($user_id);
+      //Comprobamos que el usuario tiene permisos para realizar la accion
+      $this->authorize('update', $user);
 
       //Guardamos el campo de la solicitud en un array
       $fields = $request->input();
@@ -58,19 +59,11 @@ class UserServices
       if(!$userUpdated)  throw new Exception('Error updating field ' . $keyField . ' of the user');
 
       //Retornamos respuesta al cliente
-      return $this->response(
-        'User updated successfully', 
-        true,
-        200,
-        $user, 
-      );
+      return response()->json(User::find($user_id),200);
+      
     } catch (\Exception $e) {
       //Retornamos error al cliente
-      $this->response(
-        $e->getMessage(), 
-        false,
-        500,
-      );
+      return response()->json(['message' => $e->getMessage()],500);
     }
   }
 
@@ -154,5 +147,7 @@ class UserServices
       return response()->json(['message' => $e->getMessage()],500);
     }
   }
+
+  
 }
 

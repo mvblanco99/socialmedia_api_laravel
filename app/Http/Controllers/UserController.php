@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UpdateFieldUserRequest;
 use App\Http\Requests\UpdateImageUserRequest;
-use App\Http\Requests\UserRequest;
-use App\Models\User;
 use App\Services\PostServices;
 use App\Services\UserServices;
 
@@ -43,7 +42,7 @@ class UserController extends Controller
         return $response;
     }
 
-    public function updateField(UserRequest $request, User $user)
+    public function updateField(UpdateFieldUserRequest $request, string $user)
     {
         $response = $this->userServices->updateField($request, $user);
         return $response;
