@@ -53,4 +53,10 @@ class UserController extends Controller
         $response = $this->userServices->destroy($user);
         return $response;
     }
+
+    public function getImagesUser(string $user)
+    {
+        $response = $this->userServices->getImagesUser($user);
+        return $response;
+    }
 }
