@@ -47,7 +47,7 @@ Route::group(['middleware' => 'auth:sanctum'], function() {
 
     //RUTAS PARA SOLICITAR INFORMACION DE USUARIO LOGUEADO
     Route::get('/user',[UserController::class, 'index'])->middleware('verified');
-    Route::get('find/{user}/user',[UserController::class,'findUser']);
+    Route::get('find/{user}/user',[UserController::class,'findUser'])->middleware('verified');
     Route::get('/user/view/{user}/images', [UserController::class, 'getImagesUser']);
     Route::put('/user/{user}/update',[UserController::class, 'updateField']);
     Route::delete('user/{user}/destroy',[UserController::class, 'destroy']);
