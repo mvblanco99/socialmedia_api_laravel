@@ -27,11 +27,15 @@ use AuthorizesRequests;
   public function index(User $user, int $paginate)
   {
     try {
-      $posts = Post::where('user_id', $user->id)->paginate($paginate);
+      $posts = Post::with(['images', 'user'])
+        ->where('user_id',$user->id)
+        ->paginate($paginate);
+
       return response()->json([
           'status' => true,
           'posts' => $posts
       ],200);
+      
     } catch (\Exception $e) {
       //Retornamos error al cliente
       $response = $this->response(
