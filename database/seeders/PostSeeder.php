@@ -64,6 +64,30 @@ class PostSeeder extends Seeder
                 'post_id' => $postMyUser[$i]->id
             ]);
         }
+
+        for ($i=0; $i < count($postUserAleatorios) ; $i++) { 
+            Image::create([
+                'url' => 'http://127.0.0.1:8000/profile_image_default.jpg',
+                'post_id' => $postUserAleatorios[$i]->id
+            ]);
+        }
+
+        for ($i=0; $i < count($postUserAleatorios2) ; $i++) { 
+            Image::create([
+                'url' => 'http://127.0.0.1:8000/profile_image_default.jpg',
+                'post_id' => $postUserAleatorios2[$i]->id
+            ]);
+        }
+
+        $postUserAleatorios3 = [];
+        for ($i=2; $i < 250; $i++) { 
+            $post = Post::create([
+                'user_id' => $i,
+                'is_edit' => Post::UNEDITED,
+                'description' => fake()->sentence()
+            ]);
+            array_push($postUserAleatorios3,$post);
+        }
         
     }
 }

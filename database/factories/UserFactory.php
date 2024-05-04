@@ -26,8 +26,8 @@ class UserFactory extends Factory
         return [
             'name' => fake()->name(),
             'lastname' => fake()->lastName(),
-            'url_image_profile' => asset('profile_image_default.jpg'),
-            'url_image_cover' => asset('image_cover_default.jpg'),
+            'url_image_profile' => 'http://127.0.0.1:8000/profile_image_default.jpg',
+            'url_image_cover' =>'http://127.0.0.1:8000/image_cover_default.jpg',
             'age' => fake()->numberBetween(20,80),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
