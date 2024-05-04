@@ -148,12 +148,13 @@ class UserServices
     }
   }
 
-  public function getImagesUser(string $user_id):JsonResponse
+  public function getImagesUser(string $user_id, int $offset):JsonResponse
   {
     try {
       $user = User::find($user_id);
       if(!$user) return response()->json(['message' => 'User not found'],200);
-      $posts = Post::with('images')->whereHas('images')->where('user_id',$user_id)->paginate(24);
+      if(!is_integer($offset)) return response()->json(['message' => 'offset must be an integer'],200);
+      $posts = Post::with('images')->whereHas('images')->where('user_id',$user_id)->paginate($offset);
       return response()->json($posts,200);
     } catch (\Exception $e) {
       return response()->json(['message' => $e->getMessage()],500);

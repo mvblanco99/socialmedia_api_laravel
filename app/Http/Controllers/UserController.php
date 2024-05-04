@@ -54,9 +54,9 @@ class UserController extends Controller
         return $response;
     }
 
-    public function getImagesUser(string $user)
+    public function getImagesUser(string $user, int $pagination)
     {
-        $response = $this->userServices->getImagesUser($user);
+        $response = $this->userServices->getImagesUser($user, $pagination);
         return $response;
     }
 }
