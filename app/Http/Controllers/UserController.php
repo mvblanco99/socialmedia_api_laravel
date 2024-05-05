@@ -59,4 +59,8 @@ class UserController extends Controller
         $response = $this->userServices->getImagesUser($user, $pagination);
         return $response;
     }
+
+    public function verificationEmail(){
+        return response()->json(204);
+    }
 }

@@ -46,13 +46,14 @@ Route::prefix('auth')->group(function () {
 Route::group(['middleware' => 'auth:sanctum'], function() {
 
     //RUTAS PARA SOLICITAR INFORMACION DE USUARIO LOGUEADO
-    Route::get('/user',[UserController::class, 'index'])->middleware('verified');
+    Route::get('/user',[UserController::class, 'index']);
     Route::get('find/{user}/user',[UserController::class,'findUser'])->middleware('verified');
     Route::get('/user/view/{user}/images/{pagination}', [UserController::class, 'getImagesUser']);
     Route::put('/user/{user}/update',[UserController::class, 'updateField']);
     Route::delete('user/{user}/destroy',[UserController::class, 'destroy']);
     Route::post('/user/image_profile/{user}/update',[UserController::class, 'updateImageProfile']);
     Route::post('/user/image_cover/{user}/update',[UserController::class, 'updateImageCover']);
+    Route::get('/user/{user}/verificationEmail',[UserController::class, 'verificationEmail'])->middleware('verified');
     
     //RUTAS PARA LA GESTION DE POSTS  
     Route::get('/posts/{user}/{pagination}',[PostController::class, 'index']);
