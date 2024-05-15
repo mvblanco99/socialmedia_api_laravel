@@ -46,14 +46,14 @@ Route::prefix('auth')->group(function () {
 Route::group(['middleware' => 'auth:sanctum'], function() {
 
     //RUTAS PARA SOLICITAR INFORMACION DE USUARIO LOGUEADO
-    Route::get('/user',[UserController::class, 'index']);
+    Route::get('/user',[UserController::class, 'index'])->middleware('verified');
     Route::get('find/{user}/user',[UserController::class,'findUser'])->middleware('verified');
     Route::get('/user/view/{user}/images/{pagination}', [UserController::class, 'getImagesUser']);
     Route::put('/user/{user}/update',[UserController::class, 'updateField']);
     Route::delete('user/{user}/destroy',[UserController::class, 'destroy']);
     Route::post('/user/image_profile/{user}/update',[UserController::class, 'updateImageProfile']);
     Route::post('/user/image_cover/{user}/update',[UserController::class, 'updateImageCover']);
-    Route::get('/user/{user}/verificationEmail',[UserController::class, 'verificationEmail'])->middleware('verified');
+    Route::get('/user/verificationEmail',[UserController::class, 'verificationEmail'])->middleware('verified');
     
     //RUTAS PARA LA GESTION DE POSTS  
     Route::get('/posts/{user}/{pagination}',[PostController::class, 'index']);
@@ -73,6 +73,7 @@ Route::group(['middleware' => 'auth:sanctum'], function() {
 
     //RUTAS PARA LA GESTION DE AMIGOS
     Route::get('/friends/{user}/findFriends',[FriendController::class, 'findFriends']);
+    Route::get('/friends/{user}/verifyFriendshipRelationship',[FriendController::class, 'verifyFriendshipRelationship']);
     Route::get('/friends/friendRequest',[FriendController::class, 'findAllMyRequestFriend']);
     Route::get('/friends/findUsersToRecommend',[FriendController::class, 'findUsersToRecommend']);
     Route::post('/friends/{recipient}/request',[FriendController::class, 'sendRequestFriend']);
