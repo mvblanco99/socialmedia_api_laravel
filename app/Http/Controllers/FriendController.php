@@ -22,6 +22,12 @@ class FriendController extends Controller
         return $response;
     }
 
+    public function verifyFriendshipRelationship(string $user)
+    {
+        $response = $this->UserRelationshipService->verifyFriendshipRelationship($user);
+        return $response;
+    }
+
     public function findAllMyRequestFriend()
     {
         return $this->UserRelationshipService->findAllMyRequestFriend();

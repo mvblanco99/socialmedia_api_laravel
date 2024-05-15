@@ -305,4 +305,27 @@ class UserRelationshipService{
     }
   }
 
+  public function verifyFriendshipRelationship(string $user_id){
+
+    try {
+      $user = User::find($user_id);
+      if(!$user) return response()->json(['message' => 'User not found'],200);
+
+      $authUser = Auth::user();
+
+      $friendship = 
+          Friend::where(function($query) use ($user, $authUser) {
+          $query->where('sender', $authUser->id)->where('recipient', $user->id);
+          })->orWhere(function($query) use ($user, $authUser) {
+              $query->where('sender', $user->id)->where('recipient', $authUser->id);
+          })->get();
+
+      return response()->json($friendship,200);
+    } catch (Exception $e) {
+      return response()->json(['message' => $e->getMessage()],500);
+    }
+
+
+  }
+
 }
