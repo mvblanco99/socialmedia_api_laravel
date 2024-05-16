@@ -29,6 +29,7 @@ use AuthorizesRequests;
     try {
       $posts = Post::with(['images', 'user'])
         ->where('user_id',$user->id)
+        ->orderBy('id', 'desc')
         ->paginate($paginate);
 
       return response()->json([
@@ -73,55 +74,55 @@ use AuthorizesRequests;
           throw new \Exception('Error creating post');
         }
 
-        $filename = null;
+        $filenames = [];
+        $imagesUploadedBD = [];
+
         // Comprobamos si hay imágenes para el post
-        if ($request->hasFile('image')) {
+        if ($request->hasFile('images')) {
 
-          // Guardamos la imagen en el directorio de imagenes
-          $filename = $this->imageServices->move($request->file('image'), $post);
-          //Guardamos la url de la imagen en la base de datos
-          $image = $this->imageServices->createImage($filename, $post);
+          $images = $request->file('images');
 
-          if (!$image) {
-            // Si no se pudo crear la imagen, lanzar una excepción
-            throw new \Exception('Error creating image');
+          foreach($images as $image){
+            // Guardamos la imagen en el directorio de imagenes
+            array_push($filenames,$this->imageServices->move($image, $post->user_id));
           }
 
-          if($optionsImage != 0){
+          foreach($filenames as $filename){
+            //Guardamos la url de la imagen en la base de datos
+            array_keys($imagesUploadedBD,$this->imageServices->createImage($filename, $post));
+          }
 
-            $urlImageUser = $this->userServices->assignedUserImage($optionsImage, $image->url);
-
-            if(is_string($urlImageUser)){
-              // Si no se pudo crear la imagen, lanzar una excepción
-              throw new \Exception($urlImageUser);
+          if (count($imagesUploadedBD)> 0) {
+            foreach($imagesUploadedBD as $img){
+              if(!$img){
+                // Si no se pudo crear la imagen, lanzar una excepción
+                throw new \Exception('Error creating image');
+              }
             }
+            
           }
         }
 
         //Generamos la notificacion del post
-        auth()->user()->notify(new PostNotification($post));
+        // auth()->user()->notify(new PostNotification($post));
         
         // Commit de la transacción si todo ha ido bien
         DB::commit();
 
-        return response()->json([
-          'status' => true,
-          'data' => Post::with('images')->where('id', $post->id)->get(),
-          'message' => 'Post created successfully'
-        ],201);
+        return response()->json(Post::with('images')->with('user')->where('id', $post->id)->get(),201);
                
     } catch (\Exception $e) {
         // Rollback de la transacción en caso de error
         DB::rollBack();
 
-        $errorMessage = $e->getMessage();
-
         //Se borra la imagen del servidor
         if (isset($filename)) {
-          Storage::delete('public/images/' . "" .$post->user->name . "" . $post->user_id . "/". $filename);
+          foreach($filenames as $filename){
+            Storage::delete('public/images/' . "" .$post->user->name . "" . $post->user_id . "/". $filename);
+          }
         }
 
-        return $this->serviceUnavailableResponse($errorMessage);
+        return response()->json(['message' => $e->getMessage()],500);
     }
   }
 

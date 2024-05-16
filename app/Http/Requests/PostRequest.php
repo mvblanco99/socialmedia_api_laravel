@@ -23,11 +23,9 @@ class PostRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'description' => 'nullable|min:1',
-            'image' => [
-                'nullable', 
-                File::image()->max(10 * 1024)
-            ]
+            'description' => 'nullable|min:1|required_without:images',
+            'images' => 'nullable|array',
+            'images.*' => 'required|image|extensions:jpg,png,jpeg|max:3000|required_without:description',
         ];
     }
 }
