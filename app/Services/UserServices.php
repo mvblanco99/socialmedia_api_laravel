@@ -154,7 +154,7 @@ class UserServices
       $user = User::find($user_id);
       if(!$user) return response()->json(['message' => 'User not found'],200);
       if(!is_integer($offset)) return response()->json(['message' => 'offset must be an integer'],200);
-      $posts = Post::with('images')->whereHas('images')->where('user_id',$user_id)->paginate($offset);
+      $posts = Post::with('images')->whereHas('images')->where('user_id',$user_id)->orderBy('id','desc')->paginate($offset);
       return response()->json($posts,200);
     } catch (\Exception $e) {
       return response()->json(['message' => $e->getMessage()],500);
