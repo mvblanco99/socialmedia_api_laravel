@@ -94,8 +94,7 @@ class UserRelationshipService{
     } 
 
     //Retornamos la respuesta
-    return $this->response('success',true,200,$listMyFriends);
-    
+    return response()->json($listMyFriends,200);
   }
 
   public function findUsersToRecommend():JsonResponse
