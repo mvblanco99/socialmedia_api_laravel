@@ -76,7 +76,7 @@ class UserRelationshipService{
       : $this->prefixKeysCache::PREFIXKEYFRIENDSCACHE . $user->id;
     
     //Comprobamos si el recurso buscado esta en guardado en memoria cache
-    if($this->verifiedKey($key)) return $this->response('',true,200,$this->get($key));
+    if($this->verifiedKey($key)) return response()->json($this->get($key),200);
      
     //Ejecutamos la consulta
     $listMyFriends = $this->executeQuery($user);
