@@ -25,7 +25,7 @@ class UserRelationshipService{
     private PrefixKeysCache $prefixKeysCache
   ){}
 
-  public function executeQuery(User $user, int $countPaginate = 20, bool $inRandomOrder = false, bool $paginate = true):mixed
+  public function executeQueryFindFriends(User $user, int $countPaginate = 20, bool $inRandomOrder = false, bool $paginate = true):mixed
   {
     try {
       //Creamos la query
@@ -49,9 +49,8 @@ class UserRelationshipService{
     }
   }
 
-  public function orderFriend(Collection|array $listFriends):mixed
+  public function FindDataFriends(Collection|array $listFriends):mixed
   {
-    if(count($listFriends) < 1) return []; 
       
     $infoFriends = new Collection();
 
@@ -78,21 +77,17 @@ class UserRelationshipService{
     //Comprobamos si el recurso buscado esta en guardado en memoria cache
     if($this->verifiedKey($key)) return response()->json($this->get($key),200);
      
-    //Ejecutamos la consulta
-    $listMyFriends = $this->executeQuery($user);
-
-    if(is_string($listMyFriends)) return $this->serviceUnavailableResponse($listMyFriends);
+    //Ejecutamos la consulta de busqueda de id de los amigos
+    $listMyFriends = $this->executeQueryFindFriends($user);
+    if(count($listMyFriends->items()) == 0) return response()->json($listMyFriends,200);
         
-    //Organizamos la informacion de los amigos
-    $friendsOrdered = $this->orderFriend($listMyFriends->items());
+    //Buscar la informacion de los amigos
+    $infoFriends = $this->FindDataFriends($listMyFriends->items());
     //Seteamos la colleccion organizada en la respuesta de base de datos
-    $listMyFriends->setCollection($friendsOrdered);
-
+    $listMyFriends->setCollection($infoFriends);
     //Guardamos en cache
-    if(count($friendsOrdered) > 1){
-      $this->createInfoCache($key, $listMyFriends, now()->addMinutes(5));
-    } 
-
+    $this->createInfoCache($key, $listMyFriends, now()->addMinutes(5));
+     
     //Retornamos la respuesta
     return response()->json($listMyFriends,200);
   }
@@ -144,7 +139,7 @@ class UserRelationshipService{
       }else{
 
         //Buscamos los amigos
-        $friends = $this->executeQuery($user, 0, false, false);
+        $friends = $this->executeQueryFindFriends($user, 0, false, false);
         //Verificamos si hubo un error durante la busqueda
         if(is_string($friends)) return $this->serviceUnavailableResponse($friends);
         
